@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src data:; base-uri 'none'; form-action 'none'">
+  <title>Stable FPS Finder v0.1.2</title>
+  <link rel="stylesheet" href="src/style.css">
+  <script defer src="src/analysis.js"></script>
+  <script defer src="src/demo.js"></script>
+  <script defer src="src/i18n.js"></script>
+  <script defer src="src/app.js"></script>
+</head>
+<body>
+  <header class="top"><div class="shell masthead" dir="ltr"><span class="wordmark">Stable FPS Finder <small>v0.1.2</small></span><div class="masthead-controls"><span class="credit">by <strong>@MHYGAMER1</strong></span><button id="language" type="button" lang="en">English</button></div></div></header>
+  <main class="shell">
+    <section class="hero" aria-labelledby="hero-heading">
+      <div>
+        <h1 id="hero-heading"><span data-localize>اعثر على حد الفريمات الأنسب لك</span></h1>
+        <p class="capture-guide"><span data-localize>سجّل أداء نفس المشهد مرتين بحدّين مختلفين، ويفضّل 30–60 ثانية لكل تجربة. استخدم FrameView أو أي برنامج يصدّر زمن كل إطار بالمللي ثانية في ملف CSV.</span></p>
+        <p class="capture-guide"><span data-localize>في FrameView اختر الملف اللي ينتهي بـ _Log.csv. بعد الاستيراد، اكتب حد الفريمات اللي ضبطته لكل تسجيل.</span></p>
+      </div>
+      <div class="actions">
+        <button class="primary" id="import-button" type="button"><span data-localize>استيراد ملفات CSV</span></button>
+        <button id="demo" type="button"><span data-localize>تحميل تجربة افتراضية</span></button>
+        <input id="files" type="file" accept=".csv,text/csv" multiple hidden>
+      </div>
+    </section>
+    <p class="status" id="status" role="status" aria-live="polite"><span data-localize>إذا ما عندك تسجيلات، ابدأ بالتجربة الافتراضية.</span></p>
+    <ul class="errors" id="errors" role="alert" hidden></ul>
+    <section class="result" aria-labelledby="result-title">
+      <h2 id="result-title"><span data-localize>حد الإطارات الموصى بضبطه</span></h2>
+      <div class="recommendation" id="result-value">—</div>
+      <p id="result-detail"><span data-localize>أضف تسجيلين بحدّين مختلفين، لكل تسجيل 15 ثانية و300 إطار على الأقل.</span></p>
+      <details id="cap-details" hidden>
+        <summary><span data-localize>نتائج المقارنة حسب الحد</span></summary>
+        <div class="scroll-table">
+          <table>
+            <thead><tr><th><span data-localize>الحد</span></th><th><span data-localize>التسجيلات</span></th><th><span data-localize>متوسط FPS</span></th><th>1% Low</th><th><span data-localize>أحداث / دقيقة</span></th><th><span data-localize>P99 ÷ الوسيط</span></th><th><span data-localize>ثبات 1% Low</span></th></tr></thead>
+            <tbody id="groups"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+    <section class="panel" aria-labelledby="runs-title">
+      <div class="section-head">
+        <h2 id="runs-title"><span data-localize>تسجيلات الأداء</span></h2>
+        <button id="export" type="button" disabled><span data-localize>حفظ تقرير HTML</span></button>
+      </div>
+      <p class="hint"><span data-localize>أدخل حد الفريمات اللي استخدمته لكل تسجيل. للمقارنة العادلة، سجّل نفس المشهد والإعدادات، واستخدم نفس مصدر البيانات.</span></p>
+      <p class="empty" id="empty-runs"><span data-localize>بتظهر مؤشرات الأداء هنا بعد الاستيراد.</span></p>
+      <div class="scroll-table" id="runs-table" hidden>
+        <table>
+          <thead><tr><th><span data-localize>التسجيل</span></th><th><span data-localize>حد FPS</span></th><th><span data-localize>المدة · الإطارات</span></th><th><span data-localize>متوسط FPS</span></th><th>1% Low</th><th>P99 (ms)</th><th><span data-localize>انحراف (ms)</span></th><th><span data-localize>أحداث / دقيقة</span></th><th><span data-localize>إجراءات</span></th></tr></thead>
+          <tbody id="runs"></tbody>
+        </table>
+      </div>
+    </section>
+    <section class="panel chart-section" aria-labelledby="chart-title">
+      <div class="section-head"><h2 id="chart-title"><span data-localize>زمن الإطار عبر التسجيل</span></h2><label for="chart-select"><span data-localize>عرض تسجيل</span> <select id="chart-select" disabled></select></label></div>
+      <p class="empty" id="empty-chart"><span data-localize>اختر تسجيلًا لعرض الرسم.</span></p>
+      <div id="chart-content" hidden>
+        <div class="legend"><span class="line-key"><span data-localize>زمن الإطار</span></span><span class="spike-key"><span data-localize>إطار طويل مرصود</span></span></div>
+        <canvas id="chart" width="1080" height="300" role="img" aria-labelledby="chart-title chart-caption"></canvas>
+        <p id="chart-caption" class="hint"></p>
+      </div>
+    </section>
+    <details class="method" id="method">
+      <summary><span data-localize>كيف نحسب الاستقرار؟</span></summary>
+      <p><span data-localize>المتوسط محسوب من عدد الإطارات مقسومًا على مدتها. نحسب 1% Low من معكوس متوسط زمن أبطأ 1% من الإطارات. مؤشر P99 هو زمن الإطار عند المئين 99، والانحراف يقيس تشتت أزمنة الإطارات بالمللي ثانية.</span></p>
+      <p><span data-localize>نعدّ الإطار طويلًا إذا وصل زمنه إلى 1.5× وسيط آخر 30 إطارًا وارتفع عنه 6 ms على الأقل. نستخدم وسيط التسجيل عند توفر أقل من ستة إطارات سابقة، ونحسب الإطارات الطويلة المتتالية حدثًا واحدًا.</span></p>
+      <p><span data-localize>نقارن وسيط نتائج التسجيلات لكل حد. نستبقي الأقرب للأفضل في أحداث التقطيع (بفارق حتى حدثين في الدقيقة)، ثم نسبة P99 إلى الوسيط (بفارق حتى 0.10)، ثم نسبة 1% Low إلى متوسط FPS (بفارق حتى 5 نقاط مئوية). نفاضل بعدها بأعلى متوسط FPS مقاس. هذه العتبات تجريبية.</span></p>
+    </details>
+  </main>
+  <footer class="shell"><span data-localize>تُحلّل الملفات محليًا داخل المتصفح.</span></footer>
+</body>
+</html>
